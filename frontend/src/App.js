@@ -39,15 +39,22 @@ function App() {
 
       <div className="BudgetTrackerContainer">
         <div className='HorizontalStack'>
-          <UserActionsComponent />
-          <TransactionsComponent />
+          <div className='ComponentBox UserActionsComponent'>
+            <UserActionsComponent />
+          </div>
+          <div className='ComponentBox TransactionsComponent'>
+            <TransactionsComponent />
+          </div>
         </div>
         <div className='VerticalStack'>
-          <ExpensesComponent />
-          <IncomeComponent />
+          <div className='ComponentBox ExpensesComponent'>
+            <ExpensesComponent />
+          </div>
+          <div className='ComponentBox IncomeComponent'>
+            <IncomeComponent />
+          </div>
         </div>
       </div>
-
     </div>
   );
 }

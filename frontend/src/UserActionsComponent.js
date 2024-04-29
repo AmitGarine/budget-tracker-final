@@ -4,7 +4,7 @@ import './App.css'
 class UserActionsComponent extends React.Component {
     render() {
         return (
-            <div className="Section">
+            <div className="Section UserActions">
                 <p>UserActionsComponent</p>
 
             </div>)

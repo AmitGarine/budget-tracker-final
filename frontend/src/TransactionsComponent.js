@@ -4,7 +4,7 @@ import './App.css';
 class TransactionsComponent extends React.Component {
     render() {
         return (
-            <div className="Section">
+            <div className="Section Transactions">
                 <p>TransactionsComponent</p>
 
             </div>
