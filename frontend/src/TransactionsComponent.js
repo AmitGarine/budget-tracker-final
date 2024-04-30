@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Chart from 'chart.js/auto';
 import axios from 'axios';
 import './App.css';
-import RefreshContext from './RefreshContext';  // Make sure the import path is correct
+import RefreshContext from './RefreshContext';
 
 class TransactionsComponent extends Component {
     static contextType = RefreshContext;
@@ -14,7 +14,11 @@ class TransactionsComponent extends Component {
             totalIncome: 0,
             balance: 0,
             currency: 'USD',
-            exchangeRates: { USD: 1, Euro: 0.95, Pound: 0.82, Yen: 135 }
+            exchangeRates: { USD: 1 },
+            incomes: [],
+            expenses: [],
+            originalExpenses: 0,
+            originalIncome: 0
         };
         this.chartRef = React.createRef();
         this.chart = null;
@@ -22,12 +26,22 @@ class TransactionsComponent extends Component {
 
     componentDidMount() {
         this.fetchTransactionData();
+        this.fetchExchangeRates();
     }
 
+    fetchExchangeRates = () => {
+        const apiKey = '0fdb5b17c585d86a0060d1f1'; // Use your API key
+        axios.get(`https://v6.exchangerate-api.com/v6/${apiKey}/latest/USD`)
+            .then(response => {
+                const rates = response.data.conversion_rates;
+                this.setState({ exchangeRates: rates }, this.updateTransactionAmounts);
+            })
+            .catch(error => console.error('Error fetching exchange rates:', error));
+    };
+
     componentDidUpdate(prevProps, prevState) {
-        // Check if the context's refreshKey has changed
-        if (prevProps.key !== this.props.key) {
-            this.fetchTransactionData();
+        if (prevState.currency !== this.state.currency) {
+            this.updateTransactionAmounts();
         }
     }
 
@@ -37,55 +51,88 @@ class TransactionsComponent extends Component {
         }
     }
 
-    fetchTransactionData = () => {
-        const incomesPromise = axios.get('http://localhost:3002/api/v1/get-incomes');
-        const expensesPromise = axios.get('http://localhost:3002/api/v1/get-expenses');
-
-        Promise.all([incomesPromise, expensesPromise])
-            .then(([incomesResponse, expensesResponse]) => {
-                const incomes = incomesResponse.data;
-                const expenses = expensesResponse.data;
-                this.calculateTotals(incomes, expenses);
-                this.buildChart(incomes, expenses);
-            })
-            .catch(error => console.error('Error fetching transactions:', error));
-    };
-
-    calculateTotals = (incomes, expenses) => {
-        const totalIncome = incomes.reduce((acc, curr) => acc + curr.amount, 0);
-        const totalExpenses = expenses.reduce((acc, curr) => acc + curr.amount, 0);
-
+    updateTransactionAmounts = () => {
+        const { originalExpenses, originalIncome, exchangeRates, currency } = this.state;
+        const rate = exchangeRates[currency] || 1; // Default to 1 if no rate is found to avoid errors
+    
         this.setState({
-            totalExpenses,
-            totalIncome,
-            balance: totalIncome - totalExpenses
-        });
+            totalExpenses: originalExpenses * rate,
+            totalIncome: originalIncome * rate,
+            balance: (originalIncome - originalExpenses) * rate
+        }, this.updateChartCurrency); // Update the chart with new data after state update
+    };
+    
+
+    fetchTransactionData = () => {
+        Promise.all([
+            axios.get('http://localhost:3002/api/v1/get-incomes'),
+            axios.get('http://localhost:3002/api/v1/get-expenses')
+        ]).then(([incomesResponse, expensesResponse]) => {
+            const incomes = incomesResponse.data;
+            const expenses = expensesResponse.data;
+            const totalIncomeUSD = incomes.reduce((acc, curr) => acc + curr.amount, 0);
+            const totalExpensesUSD = expenses.reduce((acc, curr) => acc + curr.amount, 0);
+            this.setState({
+                incomes,
+                expenses,
+                originalExpenses: totalExpensesUSD,
+                originalIncome: totalIncomeUSD
+            }, () => {
+                this.calculateTotals();
+                this.buildChart();
+            });
+        }).catch(error => console.error('Error fetching transactions:', error));
     };
 
-    handleCurrencyChange = (event) => {
-        const newCurrency = event.target.value;
-        this.setState({ currency: newCurrency }, () => this.updateChartCurrency());
+    calculateTotals = () => {
+        const { originalExpenses, originalIncome, exchangeRates, currency } = this.state;
+        const rate = exchangeRates[currency] || 1;
+        this.setState({
+            totalExpenses: originalExpenses * rate,
+            totalIncome: originalIncome * rate,
+            balance: (originalIncome - originalExpenses) * rate
+        }, this.updateChartCurrency);
     };
 
     updateChartCurrency = () => {
+        const { incomes, expenses, exchangeRates, currency } = this.state;
+        const rate = exchangeRates[currency] || 1;
+        const accumulatedIncomes = incomes.map(income => income.amount * rate)
+                                          .reduce((acc, curr, index) => [...acc, acc.length ? acc[acc.length - 1] + curr : curr], []);
+        const accumulatedExpenses = expenses.map(expense => expense.amount * rate)
+                                            .reduce((acc, curr, index) => [...acc, acc.length ? acc[acc.length - 1] + curr : curr], []);
+
         if (this.chart) {
-            this.chart.data.datasets.forEach((dataset) => {
-                dataset.data = dataset.data.map(value =>
-                    (value / this.state.exchangeRates[this.state.currency]) * this.state.exchangeRates[this.state.currency]);
-            });
+            this.chart.data.datasets[0].data = accumulatedIncomes;
+            this.chart.data.datasets[1].data = accumulatedExpenses;
+            this.chart.options.scales.y.title.text = `Cumulative Amount (${currency})`; // Update chart axis label
             this.chart.update();
         }
     };
 
-    buildChart = (incomes, expenses) => {
-        const ctx = this.chartRef.current.getContext('2d');
+    handleCurrencyChange = (event) => {
+        const newCurrency = event.target.value;
+        this.setState({ currency: newCurrency }, this.calculateTotals);
+    };
+
+    buildChart = () => {
+        const { incomes, expenses, currency, exchangeRates } = this.state;
+        const rate = exchangeRates[currency] || 1;
+    
+        // Check if a chart instance exists and destroy it before creating a new one
         if (this.chart) {
             this.chart.destroy();
+            this.chart = null;
         }
-
-        const accumulatedIncomes = incomes.map(income => income.amount).reduce((acc, curr, index) => acc.concat(index === 0 ? curr : acc[index - 1] + curr), []);
-        const accumulatedExpenses = expenses.map(expense => expense.amount).reduce((acc, curr, index) => acc.concat(index === 0 ? curr : acc[index - 1] + curr), []);
-
+    
+        // Convert the amounts using the current exchange rate
+        const accumulatedIncomes = incomes.map(income => income.amount * rate).reduce((acc, curr, index) => [...acc, acc.length ? acc[acc.length - 1] + curr : curr], []);
+        const accumulatedExpenses = expenses.map(expense => expense.amount * rate).reduce((acc, curr, index) => [...acc, acc.length ? acc[acc.length - 1] + curr : curr], []);
+    
+        // Get the canvas context
+        const ctx = this.chartRef.current.getContext('2d');
+    
+        // Create a new chart instance on the canvas
         this.chart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -118,7 +165,7 @@ class TransactionsComponent extends Component {
                         beginAtZero: true,
                         title: {
                             display: true,
-                            text: 'Cumulative Amount (' + this.state.currency + ')'
+                            text: 'Cumulative Amount (' + currency + ')'
                         }
                     },
                     x: {
@@ -131,9 +178,10 @@ class TransactionsComponent extends Component {
             }
         });
     };
+    
 
     render() {
-        const { totalExpenses, totalIncome, balance, currency } = this.state;
+        const { totalExpenses, totalIncome, balance, currency, exchangeRates } = this.state;
         return (
             <div>
                 <h3>Transactions Overview</h3>
@@ -154,10 +202,9 @@ class TransactionsComponent extends Component {
                 </div>
                 <div>
                     <select value={currency} onChange={this.handleCurrencyChange}>
-                        <option value='USD'>USD</option>
-                        <option value='Euro'>Euro</option>
-                        <option value='Pound'>Pound</option>
-                        <option value='Yen'>Yen</option>
+                        {Object.keys(exchangeRates).map(key => (
+                            <option key={key} value={key}>{key}</option>
+                        ))}
                     </select>
                 </div>
             </div>
