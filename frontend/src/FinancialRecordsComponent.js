@@ -75,6 +75,7 @@ class FinancialRecordsComponent extends Component {
                                 <thead>
                                     <tr>
                                         <th>Title</th>
+                                        <th>Date</th>
                                         <th>Amount</th>
                                         <th>Delete</th>
                                     </tr>
@@ -83,6 +84,7 @@ class FinancialRecordsComponent extends Component {
                                     {expenses.map(expense => (
                                         <tr key={expense._id}>
                                             <td>{expense.title}</td>
+                                            <td>{new Date(expense.date).toLocaleDateString()}</td> {/* Format date */}                                            
                                             <td>${expense.amount.toFixed(2)}</td>
                                             <td>
                                                 <button onClick={() => this.deleteRecord(expense._id, 'expense')}>
@@ -99,6 +101,7 @@ class FinancialRecordsComponent extends Component {
                                 <thead>
                                     <tr>
                                         <th>Title</th>
+                                        <th>Date</th>
                                         <th>Amount</th>
                                         <th>Delete</th>
                                     </tr>
@@ -107,6 +110,7 @@ class FinancialRecordsComponent extends Component {
                                     {incomes.map(income => (
                                         <tr key={income._id}>
                                             <td>{income.title}</td>
+                                            <td>{new Date(income.date).toLocaleDateString()}</td> {/* Format date */}
                                             <td>${income.amount.toFixed(2)}</td>
                                             <td>
                                                 <button onClick={() => this.deleteRecord(income._id, 'income')}>
