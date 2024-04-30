@@ -1,171 +1,110 @@
-// import React, { Component, useEffect, useRef } from 'react';
-// import Chart from 'chart.js/auto';
-
-// import './App.css';
-
-// class TransactionsComponent extends React.Component {
-//     constructor(props) {
-//         super(props);
-//         this.chartRef = React.createRef();
-//         this.chart = null; // Store reference to the chart instance
-
-//     }
-
-//     componentDidMount() {
-//         this.buildChart();
-//     }
-
-//     componentWillUnmount() {
-//         if (this.chart) {
-//             this.chart.destroy(); // Destroy the chart instance when the component unmounts
-//         }
-//     }
-
-//     buildChart() {
-//         const ctx = this.chartRef.current.getContext('2d');
-//         if (this.chart) {
-//             this.chart.destroy(); // Destroy previous chart instance if exists
-//         }
-//         new Chart(ctx, {
-//             type: 'line',
-//             data: {
-//                 labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-//                 datasets: [{
-//                     label: 'Transaction Amount',
-//                     data: [1, 2, 3, 4, 5, 6, 7],
-//                     backgroundColor: 'rgba(54, 162, 235, 0.2)',
-//                     borderColor: 'rgba(54, 162, 235, 1)',
-//                     borderWidth: 1
-//                 }]
-//             },
-//             options: {
-//                 scales: {
-//                     y: {
-//                         beginAtZero: true,
-//                         title: {
-//                             display: true,
-//                             text: 'Amount ($)'
-//                         }
-//                     },
-//                     x: {
-//                         title: {
-//                             display: true,
-//                             text: 'Day of the Week'
-//                         }
-//                     }
-//                 }
-//             }
-//         });
-//     }
-
-//     render() {
-//         return (
-//             <div>
-//                 <h3>Transactions</h3>
-//                 <div>
-//                     <canvas ref={this.chartRef} width='400' height='200'></canvas>
-//                 </div>
-
-//                 <div className="TransactionsTotalsContainer">
-//                     <div className="TransactionBox">
-//                         <h3>Total Expenses</h3>
-//                         <div>
-//                             <p id='TotalExpenses'>
-//                                 $0
-//                             </p>
-//                         </div>
-//                     </div>
-//                     <div className="TransactionBox">
-//                         <h3>Total Income</h3>
-//                         <div>
-//                             <p id='TotalIncome'>
-//                                 $0
-//                             </p>
-//                         </div>
-//                     </div>
-//                     <div className="TransactionBox">
-//                         <h3>Balance</h3>
-//                         <div>
-//                             <p id='Balance'>
-//                                 $0
-//                             </p>
-//                         </div> {/* Replace this with your dynamic data */}
-//                     </div>
-//                 </div>
-
-//                 <div>
-//                     Select Currency
-//                     <select>
-//                         <option value='USD'>USD</option>
-//                         <option value='Euro'>Euro</option>
-//                         <option value='Pound'>Pound</option>
-//                         <option value='Yen'>Yen</option>
-//                     </select>
-//                 </div>
-//             </div>
-//         )
-//     }
-
-// }
-
-// export default TransactionsComponent;
-
 import React from 'react';
 import Chart from 'chart.js/auto';
+import axios from 'axios';
 import './App.css';
 
 class TransactionsComponent extends React.Component {
     constructor(props) {
         super(props);
+        this.state = {
+            totalExpenses: 0,
+            totalIncome: 0,
+            balance: 0,
+            currency: 'USD',
+            exchangeRates: { USD: 1, Euro: 0.95, Pound: 0.82, Yen: 135 } // Example rates
+        };
         this.chartRef = React.createRef();
-        this.chart = null; // Store reference to the chart instance
+        this.chart = null;
     }
 
     componentDidMount() {
-        this.buildChart();
+        this.fetchTransactionData();
     }
 
     componentWillUnmount() {
         if (this.chart) {
-            this.chart.destroy(); // Destroy the chart instance when the component unmounts
+            this.chart.destroy();
         }
     }
 
-    buildChart() {
+    fetchTransactionData = () => {
+        const incomesPromise = axios.get('http://localhost:3002/api/v1/get-incomes');
+        const expensesPromise = axios.get('http://localhost:3002/api/v1/get-expenses');
+
+        Promise.all([incomesPromise, expensesPromise])
+            .then(([incomesResponse, expensesResponse]) => {
+                const incomes = incomesResponse.data;
+                const expenses = expensesResponse.data;
+                this.calculateTotals(incomes, expenses);
+                this.buildChart(incomes, expenses);
+            })
+            .catch(error => console.error('Error fetching transactions:', error));
+    };
+
+    calculateTotals = (incomes, expenses) => {
+        const totalIncome = incomes.reduce((acc, curr) => acc + curr.amount, 0);
+        const totalExpenses = expenses.reduce((acc, curr) => acc + curr.amount, 0);
+
+        this.setState({
+            totalExpenses,
+            totalIncome,
+            balance: totalIncome - totalExpenses
+        });
+    };
+
+    handleCurrencyChange = (event) => {
+        const newCurrency = event.target.value;
+        this.setState({ currency: newCurrency }, () => this.updateChartCurrency());
+    };
+
+    updateChartCurrency = () => {
+        if (this.chart) {
+            this.chart.data.datasets.forEach((dataset) => {
+                dataset.data = dataset.data.map(value => 
+                    (value / this.state.exchangeRates[this.state.currency]) * this.state.exchangeRates[this.state.currency]);
+            });
+            this.chart.update();
+        }
+    };
+
+    buildChart(incomes, expenses) {
         const ctx = this.chartRef.current.getContext('2d');
         if (this.chart) {
-            this.chart.destroy(); // Destroy previous chart instance if exists
+            this.chart.destroy();
         }
         this.chart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+                labels: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
                 datasets: [
                     {
                         label: 'Income',
-                        data: [10, 15, 20, 25, 30, 35, 40], // Example data for income
+                        data: incomes.map(income => income.amount),
                         borderColor: 'rgba(75, 192, 192, 1)',
                         backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderWidth: 1,
-                        fill: false
                     },
                     {
                         label: 'Expenses',
-                        data: [5, 10, 15, 20, 25, 30, 35], // Example data for expenses
+                        data: expenses.map(expense => expense.amount),
                         borderColor: 'rgba(255, 99, 132, 1)',
                         backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        borderWidth: 1,
-                        fill: false
                     }
                 ]
             },
             options: {
+                responsive: true,
+                plugins: {
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                },
                 scales: {
                     y: {
                         beginAtZero: true,
                         title: {
                             display: true,
-                            text: 'Amount ($)'
+                            text: 'Amount (' + this.state.currency + ')'
                         }
                     },
                     x: {
@@ -180,43 +119,28 @@ class TransactionsComponent extends React.Component {
     }
 
     render() {
+        const { totalExpenses, totalIncome, balance, currency } = this.state;
         return (
             <div>
-                <h3>Transactions</h3>
-                <div>
-                    <canvas ref={this.chartRef} width='400' height='200'></canvas>
-                </div>
-
+                <h3>Transactions Overview</h3>
+                <canvas ref={this.chartRef} />
                 <div className="TransactionsTotalsContainer">
                     <div className="TransactionBox">
                         <h3>Total Expenses</h3>
-                        <div>
-                            <p id='TotalExpenses'>
-                                $0
-                            </p>
-                        </div>
+                        <p>${totalExpenses.toFixed(2)}</p>
                     </div>
                     <div className="TransactionBox">
                         <h3>Total Income</h3>
-                        <div>
-                            <p id='TotalIncome'>
-                                $0
-                            </p>
-                        </div>
+                        <p>${totalIncome.toFixed(2)}</p>
                     </div>
                     <div className="TransactionBox">
                         <h3>Balance</h3>
-                        <div>
-                            <p id='Balance'>
-                                $0
-                            </p>
-                        </div> {/* Replace this with your dynamic data */}
+                        <p>${balance.toFixed(2)}</p>
                     </div>
                 </div>
-
                 <div>
                     Select Currency
-                    <select>
+                    <select value={currency} onChange={this.handleCurrencyChange}>
                         <option value='USD'>USD</option>
                         <option value='Euro'>Euro</option>
                         <option value='Pound'>Pound</option>
@@ -224,7 +148,7 @@ class TransactionsComponent extends React.Component {
                     </select>
                 </div>
             </div>
-        )
+        );
     }
 }
 

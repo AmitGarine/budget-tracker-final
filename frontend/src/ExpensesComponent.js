@@ -1,29 +1,66 @@
 import React from 'react';
+import axios from 'axios';
 
-class ExpensesCompoent extends React.Component {
+class ExpensesComponent extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            expense: '',
+            expenses: [],
+            title: '',
+            amount: '',
+            category: '',
+            description: '',
             selectedDay: 'monday' // Default day is Monday
         }
     }
 
-    handleExpenseChange = (event) => {
-        this.setState({ expense: event.target.value });
+    componentDidMount() {
+        this.fetchExpenses();
     }
 
-    handleDayChange = (event) => {
-        this.setState({ selectedDay: event.target.value });
+    fetchExpenses = () => {
+        axios.get('http://localhost:3002/api/v1/get-expenses')
+            .then(response => {
+                this.setState({ expenses: response.data });
+            })
+            .catch(error => {
+                console.error('Error fetching expenses:', error);
+            });
+    }
+
+    handleChange = (event) => {
+        this.setState({ [event.target.name]: event.target.value });
     }
 
     submitExpense = () => {
-        const { expense, selectedDay } = this.state;
+        const { title, amount, category, description, selectedDay } = this.state;
 
-        console.log("Expense:", expense);
-        console.log("Day:", selectedDay);
+        const payload = {
+            title: title,
+            amount: amount,
+            type: "expense",
+            date: new Date(), // Automatically sets the date to current date/time
+            category: category,
+            description: description
+        };
+
+        axios.post('http://localhost:3002/api/v1/add-expense', payload)
+            .then(response => {
+                console.log('Expense added:', response);
+                this.fetchExpenses(); // Refresh the expenses list
+            })
+            .catch(error => {
+                console.error('Error adding expense:', error);
+            });
+
         // Reset Form
-        this.setState({ expense: '', selectedDay: 'monday' });
+        this.setState({
+            title: '',
+            amount: '',
+            category: '',
+            description: '',
+            selectedDay: 'monday'
+        });
     }
 
     render() {
@@ -31,10 +68,47 @@ class ExpensesCompoent extends React.Component {
             <div>
                 <h3>Expenses</h3>
                 <div>
-                    <input type='number' placeholder='Enter Expense' value={this.state.expense} onChange={this.handleExpenseChange} />
+                    <input
+                        type="text"
+                        placeholder="Title"
+                        name="title"
+                        value={this.state.title}
+                        onChange={this.handleChange}
+                    />
                 </div>
                 <div>
-                    <select value={this.state.selectedDay} onChange={this.handleDayChange}>
+                    <input
+                        type="number"
+                        placeholder="Enter Expense Amount"
+                        name="amount"
+                        value={this.state.amount}
+                        onChange={this.handleChange}
+                    />
+                </div>
+                <div>
+                    <input
+                        type="text"
+                        placeholder="Category"
+                        name="category"
+                        value={this.state.category}
+                        onChange={this.handleChange}
+                    />
+                </div>
+                <div>
+                    <input
+                        type="text"
+                        placeholder="Description"
+                        name="description"
+                        value={this.state.description}
+                        onChange={this.handleChange}
+                    />
+                </div>
+                <div>
+                    <select
+                        name="selectedDay"
+                        value={this.state.selectedDay}
+                        onChange={this.handleChange}
+                    >
                         <option value='monday'>Monday</option>
                         <option value='tuesday'>Tuesday</option>
                         <option value='wednesday'>Wednesday</option>
@@ -47,9 +121,16 @@ class ExpensesCompoent extends React.Component {
                 <div>
                     <button onClick={this.submitExpense}>Submit</button>
                 </div>
+                <div>
+                    <ul>
+                        {this.state.expenses.map(expense => (
+                            <li key={expense._id}>{expense.title} - {expense.amount} - {expense.category}</li>
+                        ))}
+                    </ul>
+                </div>
             </div>
-        )
+        );
     }
 }
 
-export default ExpensesCompoent;
+export default ExpensesComponent;

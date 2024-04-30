@@ -1,43 +1,114 @@
 import React from 'react';
-import './App.css';
+import axios from 'axios';
 
 class IncomeComponent extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            income: '',
-            selectedDay: 'monday' // Default day is monday
+            incomes: [],
+            title: '',
+            amount: '',
+            category: '',
+            description: '',
+            selectedDay: 'monday' // Default day is Monday
         }
     }
 
-    handleIncomeChange = (event) => {
-        this.setState({ income: event.target.value });
+    componentDidMount() {
+        this.fetchIncomes();
     }
 
-    handleDayChange = (event) => {
-        this.setState({ selectedDay: event.target.value });
+    fetchIncomes = () => {
+        axios.get('http://localhost:3002/api/v1/get-incomes')
+            .then(response => {
+                this.setState({ incomes: response.data });
+            })
+            .catch(error => {
+                console.error('Error fetching incomes:', error);
+            });
     }
 
+    handleChange = (event) => {
+        this.setState({ [event.target.name]: event.target.value });
+    }
 
     submitIncome = () => {
-        const { income, selectedDay } = this.state;
+        const { title, amount, category, description, selectedDay } = this.state;
 
-        console.log("Income:", income);
-        console.log("Day:", selectedDay);
+        const payload = {
+            title: title,
+            amount: amount,
+            type: "income",
+            date: new Date(), // Automatically sets the date to current date/time
+            category: category,
+            description: description
+        };
+
+        axios.post('http://localhost:3002/api/v1/add-income', payload)
+            .then(response => {
+                console.log('Income added:', response);
+                this.fetchIncomes(); // Refresh the incomes list
+            })
+            .catch(error => {
+                console.error('Error adding income:', error);
+            });
+
         // Reset Form
-        this.setState({ income: '', selectedDay: 'monday' })
-    };
-
+        this.setState({
+            title: '',
+            amount: '',
+            category: '',
+            description: '',
+            selectedDay: 'monday'
+        });
+    }
 
     render() {
         return (
             <div>
                 <h3>Income</h3>
                 <div>
-                    <input type='number' placeholder='Enter Income' value={this.state.income} onChange={this.handleIncomeChange} />
+                    <input
+                        type="text"
+                        placeholder="Title"
+                        name="title"
+                        value={this.state.title}
+                        onChange={this.handleChange}
+                    />
                 </div>
                 <div>
-                    <select value={this.state.selectedDay} onChange={this.handleDayChange}>
+                    <input
+                        type="number"
+                        placeholder="Enter Income Amount"
+                        name="amount"
+                        value={this.state.amount}
+                        onChange={this.handleChange}
+                    />
+                </div>
+                <div>
+                    <input
+                        type="text"
+                        placeholder="Category"
+                        name="category"
+                        value={this.state.category}
+                        onChange={this.handleChange}
+                    />
+                </div>
+                <div>
+                    <input
+                        type="text"
+                        placeholder="Description"
+                        name="description"
+                        value={this.state.description}
+                        onChange={this.handleChange}
+                    />
+                </div>
+                <div>
+                    <select
+                        name="selectedDay"
+                        value={this.state.selectedDay}
+                        onChange={this.handleChange}
+                    >
                         <option value='monday'>Monday</option>
                         <option value='tuesday'>Tuesday</option>
                         <option value='wednesday'>Wednesday</option>
@@ -50,8 +121,15 @@ class IncomeComponent extends React.Component {
                 <div>
                     <button onClick={this.submitIncome}>Submit</button>
                 </div>
+                <div>
+                    <ul>
+                        {this.state.incomes.map(income => (
+                            <li key={income._id}>{income.title} - {income.amount} - {income.category}</li>
+                        ))}
+                    </ul>
+                </div>
             </div>
-        )
+        );
     }
 }
 
