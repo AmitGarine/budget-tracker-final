@@ -2,11 +2,13 @@ const User = require("../models/Users");
 
 exports.registerUser = async (req, res) => {
     const { username, email, password } = req.body;
-
     try {
-        const newUser = new User({ username, email, password }); 
+        const newUser = new User({ username, email, password }); // Assuming password hashing etc. is handled
         await newUser.save();
-        res.status(201).json({ message: "User registered successfully" });
+        res.status(201).json({
+            message: "User registered successfully",
+            userId: newUser._id  // Returning the user ID in the response
+        });
     } catch (error) {
         res.status(500).json({ message: "Server Error", error: error.message });
     }
