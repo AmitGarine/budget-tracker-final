@@ -204,15 +204,15 @@ class TransactionsComponent extends Component {
                 <div className="TransactionsTotalsContainer">
                     <div className="TransactionBox">
                         <h3>Total Expenses</h3>
-                        <p>${totalExpenses.toFixed(2)}</p>
+                        <p>{totalExpenses.toFixed(2)}</p>
                     </div>
                     <div className="TransactionBox">
                         <h3>Total Income</h3>
-                        <p>${totalIncome.toFixed(2)}</p>
+                        <p>{totalIncome.toFixed(2)}</p>
                     </div>
                     <div className="TransactionBox">
                         <h3>Balance</h3>
-                        <p>${balance.toFixed(2)}</p>
+                        <p>{balance.toFixed(2)}</p>
                     </div>
                 </div>
                 <div className='SelectBoxContainer'>
