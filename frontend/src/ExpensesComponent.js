@@ -75,14 +75,14 @@ class ExpensesComponent extends React.Component {
 
     render() {
         return (
-            <div className="expenses-container">
+            <div className="ExpensesContainer">
                 <h3>Expenses</h3>
                 <input type="text" placeholder="Title" name="title" value={this.state.title} onChange={this.handleChange} />
                 <input type="number" placeholder="Enter Expense Amount" name="amount" value={this.state.amount} onChange={this.handleChange} />
                 <input type="date" name="date" value={this.state.date} onChange={this.handleChange} />
                 <input type="text" placeholder="Category" name="category" value={this.state.category} onChange={this.handleChange} />
                 <input type="text" placeholder="Description" name="description" value={this.state.description} onChange={this.handleChange} />
-                <button onClick={this.submitExpense}>Submit</button>
+                <button className='submitButton' onClick={this.submitExpense}>Submit</button>
             </div>
         );
     }

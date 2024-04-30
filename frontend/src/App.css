@@ -174,14 +174,16 @@ html, body {
 input[type="text"],
 input[type="number"],
 input[type="date"] {
-  padding: 8px;
-  margin: 4px auto;
+  padding: 6px;
+  margin: 2px auto;
   width: 300px;
   display: block;
 }
 
 .submitButton {
-  padding: 10px 20px;
+  padding: 6px 20px;
+  width: 316px;
+
   background-color: #007BFF;
   color: white;
   border: none;

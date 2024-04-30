@@ -72,7 +72,7 @@ class IncomeComponent extends React.Component {
                 <input type="date" name="date" value={this.state.date} onChange={this.handleChange} />
                 <input type="text" placeholder="Category" name="category" value={this.state.category} onChange={this.handleChange} />
                 <input type="text" placeholder="Description" name="description" value={this.state.description} onChange={this.handleChange} />
-                <button onClick={this.submitIncome}>Submit</button>
+                <button className='submitButton' onClick={this.submitIncome}>Submit</button>
             </div>
         );
     }
