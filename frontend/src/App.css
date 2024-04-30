@@ -55,3 +55,18 @@
   justify-content: space-between;
 
 }
+
+.TransactionBox {
+  width: 30%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: white;
+  text-align: center;
+  margin-right: 20px;
+  margin-left: 20px;
+}
+
+.TransactionBox h3 {
+  font-size: 16px;
+}
