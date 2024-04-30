@@ -1,38 +1,72 @@
 .App {
   text-align: center;
+  margin-left: 10%;
+  margin-right: 10%;
+  margin-top: 2%;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.AppHeader {
+  color: black;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.BudgetTrackerContainer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.HorizontalStack {
+  display: flex;
+  width: 70%;
+}
+
+.VerticalStack {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  width: 30%;
 }
 
-.App-link {
-  color: #61dafb;
+.ComponentBox {
+  flex-grow: 1;
+  /* padding: 20px; */
+  margin-right: 20px;
+  margin-bottom: 20px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.UserActionsComponent {
+  width: 15%;
+}
+
+.TransactionsComponent {
+  width: 55%;
+}
+
+.ExpensesComponent,
+.IncomeComponent {
+  width: 100%;
+  height: 40vh;
+}
+
+.TransactionsTotalsContainer {
+  display: flex;
+  justify-content: space-between;
+
+}
+
+.TransactionBox {
+  width: 30%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: white;
+  text-align: center;
+  margin-right: 20px;
+  margin-left: 20px;
+}
+
+.TransactionBox h3 {
+  font-size: 16px;
 }
