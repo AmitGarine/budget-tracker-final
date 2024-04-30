@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { Component } from 'react';
 import Chart from 'chart.js/auto';
 import axios from 'axios';
 import './App.css';
+import RefreshContext from './RefreshContext';  // Make sure the import path is correct
 
-class TransactionsComponent extends React.Component {
+class TransactionsComponent extends Component {
+    static contextType = RefreshContext;
+
     constructor(props) {
         super(props);
         this.state = {
@@ -11,7 +14,7 @@ class TransactionsComponent extends React.Component {
             totalIncome: 0,
             balance: 0,
             currency: 'USD',
-            exchangeRates: { USD: 1, Euro: 0.95, Pound: 0.82, Yen: 135 } // Example rates
+            exchangeRates: { USD: 1, Euro: 0.95, Pound: 0.82, Yen: 135 }
         };
         this.chartRef = React.createRef();
         this.chart = null;
@@ -19,6 +22,13 @@ class TransactionsComponent extends React.Component {
 
     componentDidMount() {
         this.fetchTransactionData();
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        // Check if the context's refreshKey has changed
+        if (prevProps.key !== this.props.key) {
+            this.fetchTransactionData();
+        }
     }
 
     componentWillUnmount() {
@@ -67,30 +77,14 @@ class TransactionsComponent extends React.Component {
         }
     };
 
-    buildChart(incomes, expenses) {
+    buildChart = (incomes, expenses) => {
         const ctx = this.chartRef.current.getContext('2d');
         if (this.chart) {
             this.chart.destroy();
         }
 
-        // Accumulate the values for incomes and expenses
-        const accumulatedIncomes = incomes.map(income => income.amount).reduce((acc, curr, index) => {
-            if (index === 0) {
-                acc.push(curr);
-            } else {
-                acc.push(acc[index - 1] + curr);
-            }
-            return acc;
-        }, []);
-
-        const accumulatedExpenses = expenses.map(expense => expense.amount).reduce((acc, curr, index) => {
-            if (index === 0) {
-                acc.push(curr);
-            } else {
-                acc.push(acc[index - 1] + curr);
-            }
-            return acc;
-        }, []);
+        const accumulatedIncomes = incomes.map(income => income.amount).reduce((acc, curr, index) => acc.concat(index === 0 ? curr : acc[index - 1] + curr), []);
+        const accumulatedExpenses = expenses.map(expense => expense.amount).reduce((acc, curr, index) => acc.concat(index === 0 ? curr : acc[index - 1] + curr), []);
 
         this.chart = new Chart(ctx, {
             type: 'line',
@@ -136,8 +130,7 @@ class TransactionsComponent extends React.Component {
                 }
             }
         });
-    }
-
+    };
 
     render() {
         const { totalExpenses, totalIncome, balance, currency } = this.state;
@@ -160,7 +153,6 @@ class TransactionsComponent extends React.Component {
                     </div>
                 </div>
                 <div>
-                    Select Currency
                     <select value={currency} onChange={this.handleCurrencyChange}>
                         <option value='USD'>USD</option>
                         <option value='Euro'>Euro</option>
