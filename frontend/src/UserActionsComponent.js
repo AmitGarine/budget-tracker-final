@@ -24,16 +24,18 @@ class UserActionsComponent extends React.Component {
 
     handleSignup = () => {
         const { username, password } = this.state;
+        console.log('Username:', username);
+        console.log('Password:', password);
         axios.post('http://localhost:3002/api/v1/register', { username, password })
             .then(response => {
-                this.context.login(response.data.userId, response.data.token);
+                this.context.login(response.data.userId);
                 this.setState({
                     isLoggedIn: true,
                     message: 'Signup successful! Welcome ' + username
                 });
             })
             .catch(error => {
-                this.setState({ message: 'Error signing up: ' + error.message });
+                this.setState({ message: 'Username already taken' });
             });
     }
 
