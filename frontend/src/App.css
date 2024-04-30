@@ -33,6 +33,15 @@ html, body {
   width: 30%;
 }
 
+.nav-links {
+  margin-bottom: 10px; /* Adds spacing below the navigation links */
+}
+
+.logout-section {
+  padding-top: 10px; /* Adds padding at the top of the logout section for additional spacing */
+  border-top: 1px solid #ccc; /* Optional: adds a subtle line above the logout button for better separation */
+}
+
 .ComponentBox {
   flex-grow: 1;
   /* padding: 20px; */

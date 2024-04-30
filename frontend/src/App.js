@@ -2,6 +2,8 @@ import './App.css';
 import React, { useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { AppProvider, AppContext } from './AppContext';
+import LogoutButton from './LogoutComponent'; 
+
 
 import UserActionsComponent from './UserActionsComponent';
 import TransactionsComponent from './TransactionsComponent';
@@ -62,11 +64,18 @@ function Navigation() {
   const { auth } = useContext(AppContext);
 
   return (
-    auth.isLoggedIn && (
-      <nav>
-        <Link to="/">Home</Link> | <Link to="/records">Financial Records</Link>
-      </nav>
-    )
+    <nav>
+      {auth.isLoggedIn && (
+        <div className="nav-links">
+          <Link to="/">Home</Link> | <Link to="/records">Financial Records</Link>
+        </div>
+      )}
+      {auth.isLoggedIn && (
+        <div className="logout-section">
+          <LogoutButton /> {/* This renders the logout button below the links if logged in */}
+        </div>
+      )}
+    </nav>
   );
 }
 

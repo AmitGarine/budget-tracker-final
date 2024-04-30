@@ -57,17 +57,6 @@ class UserActionsComponent extends React.Component {
             });
     };
 
-    handleLogout = () => {
-        this.context.logout();
-        this.setState({
-            isLoggedIn: false,
-            username: '',
-            password: '',
-            message: 'Logged out successfully.'
-        });
-        this.context.triggerRefresh();
-    };
-
     render() {
         const { username, password, message } = this.state;
         return (
