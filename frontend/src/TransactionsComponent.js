@@ -191,7 +191,7 @@ class TransactionsComponent extends Component {
         const { totalExpenses, totalIncome, balance, currency, exchangeRates } = this.state;
         return (
             <div>
-                <h3>Transactions Overview</h3>
+                <h3>Budget Overview</h3>
                 <canvas ref={this.chartRef} />
                 <div className="TransactionsTotalsContainer">
                     <div className="TransactionBox">
@@ -207,8 +207,8 @@ class TransactionsComponent extends Component {
                         <p>${balance.toFixed(2)}</p>
                     </div>
                 </div>
-                <div>
-                    <select value={currency} onChange={this.handleCurrencyChange}>
+                <div className='SelectBoxContainer'>
+                    <select className='select-box' value={currency} onChange={this.handleCurrencyChange}>
                         {Object.keys(exchangeRates).map(key => (
                             <option key={key} value={key}>{key}</option>
                         ))}

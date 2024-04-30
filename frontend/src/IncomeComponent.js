@@ -81,7 +81,7 @@ class IncomeComponent extends React.Component {
 
     render() {
         return (
-            <div>
+            <div className='IncomeContainer'>
                 <h3>Income</h3>
                 <div>
                     <input
@@ -120,7 +120,7 @@ class IncomeComponent extends React.Component {
                     />
                 </div>
                 <div>
-                    <button onClick={this.submitIncome}>Submit</button>
+                    <button className="submitButton" onClick={this.submitIncome}>Submit</button>
                 </div>
             </div>
         );
