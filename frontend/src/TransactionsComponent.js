@@ -1,119 +1,119 @@
-import React, { Component } from 'react';
-import axios from 'axios';
-import RefreshContext from './RefreshContext';  // Ensure this path is correct
-import './App.css'
+import React from 'react';
+import Chart from 'chart.js/auto';
+import './App.css';
 
-class FinancialRecordsComponent extends Component {
-    static contextType = RefreshContext;  // Using contextType to consume context
-
-    state = {
-        expenses: [],
-        incomes: [],
-        isLoading: false,  // Track loading state
-        error: null  // Track errors
-    };
-
-    componentDidMount() {
-        this.fetchFinancialRecords();
+class TransactionsComponent extends React.Component {
+    constructor(props) {
+        super(props);
+        this.chartRef = React.createRef();
+        this.chart = null; // Store reference to the chart instance
     }
 
-    fetchFinancialRecords = () => {
-        this.setState({ isLoading: true, error: null });
-        const expensesPromise = axios.get('http://localhost:3002/api/v1/get-expenses');
-        const incomesPromise = axios.get('http://localhost:3002/api/v1/get-incomes');
+    componentDidMount() {
+        this.buildChart();
+    }
 
-        Promise.all([expensesPromise, incomesPromise])
-            .then(([expensesResponse, incomesResponse]) => {
-                this.setState({
-                    expenses: expensesResponse.data,
-                    incomes: incomesResponse.data,
-                    isLoading: false
-                });
-            })
-            .catch(error => {
-                console.error('Error fetching financial records:', error);
-                this.setState({ error: 'Failed to fetch data', isLoading: false });
-            });
-    };
+    componentWillUnmount() {
+        if (this.chart) {
+            this.chart.destroy(); // Destroy the chart instance when the component unmounts
+        }
+    }
 
-    deleteRecord = (id, type) => {
-        this.setState({ isLoading: true });
-        const endpoint = type === 'expense' ? 'delete-expense' : 'delete-income';
-        axios.delete(`http://localhost:3002/api/v1/${endpoint}/${id}`)
-            .then(() => {
-                alert(`${type} deleted successfully`);
-                this.fetchFinancialRecords();  // Refresh the local component state
-                this.context.triggerRefresh(); // Trigger refresh in TransactionsComponent via context
-            })
-            .catch(error => {
-                console.error(`Error deleting ${type}:`, error);
-                alert(`Failed to delete ${type}`);
-                this.setState({ isLoading: false });
-            });
-    };
+    buildChart() {
+        const ctx = this.chartRef.current.getContext('2d');
+        if (this.chart) {
+            this.chart.destroy(); // Destroy previous chart instance if exists
+        }
+        this.chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+                datasets: [
+                    {
+                        label: 'Income',
+                        data: [10, 15, 20, 25, 30, 35, 40], // Example data for income
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderWidth: 1,
+                        fill: false
+                    },
+                    {
+                        label: 'Expenses',
+                        data: [5, 10, 15, 20, 25, 30, 35], // Example data for expenses
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderWidth: 1,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Amount ($)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Day of the Week'
+                        }
+                    }
+                }
+            }
+        });
+    }
 
     render() {
-        const { expenses, incomes, isLoading, error } = this.state;
         return (
             <div>
-                {error && <p className="error">{error}</p>}
-                {isLoading ? <p>Loading...</p> : (
-                    <>
+                <h3>Transactions</h3>
+                <div>
+                    <canvas ref={this.chartRef} width='400' height='200'></canvas>
+                </div>
+
+                <div className="TransactionsTotalsContainer">
+                    <div className="TransactionBox">
+                        <h3>Total Expenses</h3>
                         <div>
-                            <h2>Expenses</h2>
-                            <table className='TransactionsTable'>
-                                <thead>
-                                    <tr>
-                                        <th>Title</th>
-                                        <th>Amount</th>
-                                        <th>Delete</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {expenses.map(expense => (
-                                        <tr key={expense._id}>
-                                            <td>{expense.title}</td>
-                                            <td>${expense.amount.toFixed(2)}</td>
-                                            <td>
-                                                <button onClick={() => this.deleteRecord(expense._id, 'expense')}>
-                                                    Delete
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-
-                            <h2>Incomes</h2>
-                            <table className='TransactionsTable'>
-                                <thead>
-                                    <tr>
-                                        <th>Title</th>
-                                        <th>Amount</th>
-                                        <th>Delete</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {incomes.map(income => (
-                                        <tr key={income._id}>
-                                            <td>{income.title}</td>
-                                            <td>${income.amount.toFixed(2)}</td>
-                                            <td>
-                                                <button onClick={() => this.deleteRecord(income._id, 'income')}>
-                                                    Delete
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                            <p id='TotalExpenses'>
+                                $0
+                            </p>
                         </div>
+                    </div>
+                    <div className="TransactionBox">
+                        <h3>Total Income</h3>
+                        <div>
+                            <p id='TotalIncome'>
+                                $0
+                            </p>
+                        </div>
+                    </div>
+                    <div className="TransactionBox">
+                        <h3>Balance</h3>
+                        <div>
+                            <p id='Balance'>
+                                $0
+                            </p>
+                        </div> {/* Replace this with your dynamic data */}
+                    </div>
+                </div>
 
-                    </>
-                )}
+                <div>
+                    Select Currency
+                    <select>
+                        <option value='USD'>USD</option>
+                        <option value='Euro'>Euro</option>
+                        <option value='Pound'>Pound</option>
+                        <option value='Yen'>Yen</option>
+                    </select>
+                </div>
             </div>
-        );
+        )
     }
 }
 
-export default FinancialRecordsComponent;
+export default TransactionsComponent;
