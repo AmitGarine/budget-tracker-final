@@ -172,7 +172,8 @@ html, body {
 }
 
 input[type="text"],
-input[type="number"] {
+input[type="number"],
+input[type="date"] {
   padding: 8px;
   margin: 4px auto;
   width: 300px;
