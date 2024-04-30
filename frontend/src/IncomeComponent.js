@@ -37,6 +37,7 @@ class IncomeComponent extends React.Component {
                     <input type='number' placeholder='Enter Income' value={this.state.income} onChange={this.handleIncomeChange} />
                 </div>
                 <div>
+                    Enter Date
                     <select value={this.state.selectedDay} onChange={this.handleDayChange}>
                         <option value='monday'>Monday</option>
                         <option value='tuesday'>Tuesday</option>

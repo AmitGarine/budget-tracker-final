@@ -34,6 +34,7 @@ class ExpensesCompoent extends React.Component {
                     <input type='number' placeholder='Enter Expense' value={this.state.expense} onChange={this.handleExpenseChange} />
                 </div>
                 <div>
+                    Enter Date
                     <select value={this.state.selectedDay} onChange={this.handleDayChange}>
                         <option value='monday'>Monday</option>
                         <option value='tuesday'>Tuesday</option>
