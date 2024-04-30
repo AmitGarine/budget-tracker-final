@@ -140,13 +140,24 @@ class TransactionsComponent extends React.Component {
             type: 'line',
             data: {
                 labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-                datasets: [{
-                    label: 'Transaction Amount',
-                    data: [1, 2, 3, 4, 5, 6, 7],
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1
-                }]
+                datasets: [
+                    {
+                        label: 'Income',
+                        data: [10, 15, 20, 25, 30, 35, 40], // Example data for income
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderWidth: 1,
+                        fill: false
+                    },
+                    {
+                        label: 'Expenses',
+                        data: [5, 10, 15, 20, 25, 30, 35], // Example data for expenses
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderWidth: 1,
+                        fill: false
+                    }
+                ]
             },
             options: {
                 scales: {
