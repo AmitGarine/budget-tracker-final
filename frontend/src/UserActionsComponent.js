@@ -1,7 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import { AppContext } from './AppContext';
-
+import './App.css';
 
 class UserActionsComponent extends React.Component {
     static contextType = AppContext;
@@ -26,8 +26,7 @@ class UserActionsComponent extends React.Component {
         const { username, password } = this.state;
         axios.post('http://localhost:3002/api/v1/register', { username, password })
             .then(response => {
-                // Assuming the backend returns userId and possibly a token
-                this.context.login(response.data.userId, response.data.token); 
+                this.context.login(response.data.userId, response.data.token);
                 this.setState({
                     isLoggedIn: true,
                     message: 'Signup successful! Welcome ' + username
@@ -35,7 +34,6 @@ class UserActionsComponent extends React.Component {
             })
             .catch(error => {
                 this.setState({ message: 'Error signing up: ' + error.message });
-                console.error('Error signing up:', error);
             });
     }
 
@@ -43,36 +41,37 @@ class UserActionsComponent extends React.Component {
         const { username, password } = this.state;
         axios.post('http://localhost:3002/api/v1/login', { username, password })
             .then(response => {
-                this.context.login(response.data.userId, response.data.token); // Set user context
+                this.context.login(response.data.userId, response.data.token);
                 this.setState({
                     isLoggedIn: true,
                     message: 'Login successful! Welcome ' + username
                 });
-                this.context.triggerRefresh(); // Trigger a global refresh after login
+                this.context.triggerRefresh();
             })
             .catch(error => {
-                this.setState({ message: 'Error logging in: ' + error.message });
-                console.error('Error logging in:', error);
+                if (error.response) {
+                    this.setState({ message: 'Invalid username/password', username: '', password: '' });
+                }
             });
     };
-    
+
     handleLogout = () => {
-        this.context.logout(); // Reset user context
+        this.context.logout();
         this.setState({
             isLoggedIn: false,
             username: '',
             password: '',
             message: 'Logged out successfully.'
         });
-        this.context.triggerRefresh(); // Trigger a global refresh after logout
+        this.context.triggerRefresh();
     };
 
     render() {
         const { username, password, message } = this.state;
         return (
-            <div>
+            <div className="user-actions">
                 <p>Welcome, {this.state.isLoggedIn ? username : 'Guest'}</p>
-                {message && <p>{message}</p>}
+                {message && <p className="error-message">{message}</p>}
                 {!this.state.isLoggedIn ? (
                     <div>
                         <input
