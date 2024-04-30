@@ -57,7 +57,7 @@ exports.deleteIncome = async (req, res) => {
         if (!income) {
             return res.status(404).json({message: 'Income not found or not authorized'});
         }
-        await income.remove();
+        await income.deleteOne();
         res.status(200).json({message: 'Income Deleted'});
     } catch (error) {
         res.status(500).json({message: 'Server Error', error: error.message});

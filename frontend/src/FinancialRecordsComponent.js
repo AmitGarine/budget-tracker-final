@@ -2,9 +2,11 @@ import React, { Component } from 'react';
 import axios from 'axios';
 import RefreshContext from './RefreshContext';  // Ensure this path is correct
 import './App.css'
+import { AuthContext } from './AuthContext'; 
 
 class FinancialRecordsComponent extends Component {
-    static contextType = RefreshContext;  // Using contextType to consume context
+    static contextType = RefreshContext;
+    static contextType = AuthContext;
 
     state = {
         expenses: [],
@@ -18,9 +20,15 @@ class FinancialRecordsComponent extends Component {
     }
 
     fetchFinancialRecords = () => {
+        const { userId } = this.context.auth;
+        if (!userId) {
+            console.error('No user ID provided');
+            return;
+        }
+
         this.setState({ isLoading: true, error: null });
-        const expensesPromise = axios.get('http://localhost:3002/api/v1/get-expenses');
-        const incomesPromise = axios.get('http://localhost:3002/api/v1/get-incomes');
+        const expensesPromise = axios.get(`http://localhost:3002/api/v1/get-expenses?userId=${userId}`);
+        const incomesPromise = axios.get(`http://localhost:3002/api/v1/get-incomes?userId=${userId}`);
 
         Promise.all([expensesPromise, incomesPromise])
             .then(([expensesResponse, incomesResponse]) => {
@@ -37,9 +45,14 @@ class FinancialRecordsComponent extends Component {
     };
 
     deleteRecord = (id, type) => {
+        const { userId } = this.context.auth;
+        if (!userId) {
+            console.error('No user ID provided');
+            return;
+        }
         this.setState({ isLoading: true });
         const endpoint = type === 'expense' ? 'delete-expense' : 'delete-income';
-        axios.delete(`http://localhost:3002/api/v1/${endpoint}/${id}`)
+        axios.delete(`http://localhost:3002/api/v1/${endpoint}/${id}?userId=${userId}`)
             .then(() => {
                 alert(`${type} deleted successfully`);
                 this.fetchFinancialRecords();  // Refresh the local component state

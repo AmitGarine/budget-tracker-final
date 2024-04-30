@@ -57,7 +57,7 @@ exports.deleteExpense = async (req, res) => {
         if (!expense) {
             return res.status(404).json({ message: 'Expense not found or not authorized' });
         }
-        await expense.remove();
+        await expense.deleteOne();
         res.status(200).json({ message: 'Expense Deleted' });
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });

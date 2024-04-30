@@ -22,8 +22,11 @@ exports.loginUser = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
-        if (user.password === password) { 
-            res.status(200).json({ message: "Logged in successfully" });
+        if (user.password === password) {  // Ideally, this should use hashed password comparison
+            res.status(200).json({
+                message: "Logged in successfully",
+                userId: user._id  // Include userId in the response
+            });
         } else {
             res.status(400).json({ message: "Invalid credentials" });
         }

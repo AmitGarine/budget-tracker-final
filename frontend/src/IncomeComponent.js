@@ -1,7 +1,11 @@
 import React from 'react';
 import axios from 'axios';
+import { AuthContext } from './AuthContext'; 
+
 
 class IncomeComponent extends React.Component {
+    static contextType = AuthContext;
+
     constructor(props) {
         super(props);
         this.state = {
@@ -19,7 +23,12 @@ class IncomeComponent extends React.Component {
     }
 
     fetchIncomes = () => {
-        axios.get('http://localhost:3002/api/v1/get-incomes')
+        const { userId } = this.context.auth;
+        if (!userId) {
+            console.error('No user ID provided');
+            return;
+        }
+        axios.get(`http://localhost:3002/api/v1/get-incomes?userId=${userId}`)
             .then(response => {
                 this.setState({ incomes: response.data });
             })
@@ -33,18 +42,24 @@ class IncomeComponent extends React.Component {
     }
 
     submitIncome = () => {
+        const { userId } = this.context.auth;
         const { title, amount, category, description, selectedDay } = this.state;
+        if (!userId) {
+            console.error('No user ID provided');
+            return;
+        }
 
         const payload = {
-            title: title,
-            amount: amount,
+            title,
+            amount,
             type: "income",
-            date: new Date(), // Automatically sets the date to current date/time
-            category: category,
-            description: description
+            date: new Date(),
+            category,
+            description,
+            userId
         };
 
-        axios.post('http://localhost:3002/api/v1/add-income', payload)
+        axios.post(`http://localhost:3002/api/v1/add-income?userId=${userId}`, payload)
             .then(response => {
                 console.log('Income added:', response);
                 this.fetchIncomes(); // Refresh the incomes list

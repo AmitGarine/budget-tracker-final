@@ -2,6 +2,7 @@ import './App.css';
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import RefreshContext from './RefreshContext';
+import { AuthProvider } from './AuthContext';
 
 import UserActionsComponent from './UserActionsComponent';
 import TransactionsComponent from './TransactionsComponent';
@@ -19,6 +20,7 @@ function App() {
 
   return (
     <Router>
+      <AuthProvider>
       <RefreshContext.Provider value={{ refreshKey, triggerRefresh }}>
         <div className="App">
           <header className="AppHeader">
@@ -53,6 +55,7 @@ function App() {
           </Routes>
         </div>
       </RefreshContext.Provider>
+      </AuthProvider>
     </Router>
   );
 }

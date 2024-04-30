@@ -3,9 +3,12 @@ import Chart from 'chart.js/auto';
 import axios from 'axios';
 import './App.css';
 import RefreshContext from './RefreshContext';
+import { AuthContext } from './AuthContext'; 
 
 class TransactionsComponent extends Component {
     static contextType = RefreshContext;
+    static contextType = AuthContext;
+
 
     constructor(props) {
         super(props);
@@ -64,9 +67,15 @@ class TransactionsComponent extends Component {
     
 
     fetchTransactionData = () => {
+        const { userId } = this.context.auth;
+        if (!userId) {
+            console.error('No user ID provided');
+            return;
+        }
+
         Promise.all([
-            axios.get('http://localhost:3002/api/v1/get-incomes'),
-            axios.get('http://localhost:3002/api/v1/get-expenses')
+            axios.get(`http://localhost:3002/api/v1/get-incomes?userId=${userId}`),
+            axios.get(`http://localhost:3002/api/v1/get-expenses?userId=${userId}`)
         ]).then(([incomesResponse, expensesResponse]) => {
             const incomes = incomesResponse.data;
             const expenses = expensesResponse.data;
