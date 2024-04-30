@@ -70,3 +70,53 @@
 .TransactionBox h3 {
   font-size: 16px;
 }
+
+.TransactionsTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.TransactionsTable th,
+.TransactionsTable td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
+
+.TransactionsTable th:nth-child(1),
+.TransactionsTable td:nth-child(1) {
+  width: 50%;
+}
+
+.TransactionsTable th:nth-child(2),
+.TransactionsTable td:nth-child(2) {
+  width: 30%;
+}
+
+.TransactionsTable th:nth-child(3),
+.TransactionsTable td:nth-child(3) {
+  width: 20%;
+}
+
+.TransactionsTable th {
+  background-color: #f4f4f4;
+}
+
+.TransactionsTable td {
+  background-color: #fff;
+}
+
+.TransactionsTable button {
+  padding: 8px 12px;
+  background-color: red;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.TransactionsTable button:hover {
+  background-color: darkred;
+}

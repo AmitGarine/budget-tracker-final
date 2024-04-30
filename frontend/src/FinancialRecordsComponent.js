@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import RefreshContext from './RefreshContext';  // Ensure this path is correct
+import './App.css'
 
 class FinancialRecordsComponent extends Component {
     static contextType = RefreshContext;  // Using contextType to consume context
@@ -58,28 +59,56 @@ class FinancialRecordsComponent extends Component {
                 {error && <p className="error">{error}</p>}
                 {isLoading ? <p>Loading...</p> : (
                     <>
-                        <h2>Expenses</h2>
-                        <ul>
-                            {expenses.map(expense => (
-                                <li key={expense._id}>
-                                    {expense.title} - ${expense.amount}
-                                    <button onClick={() => this.deleteRecord(expense._id, 'expense')}>
-                                        Delete
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
-                        <h2>Incomes</h2>
-                        <ul>
-                            {incomes.map(income => (
-                                <li key={income._id}>
-                                    {income.title} - ${income.amount}
-                                    <button onClick={() => this.deleteRecord(income._id, 'income')}>
-                                        Delete
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
+                        <div>
+                            <h2>Expenses</h2>
+                            <table className='TransactionsTable'>
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Amount</th>
+                                        <th>Delete</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {expenses.map(expense => (
+                                        <tr key={expense._id}>
+                                            <td>{expense.title}</td>
+                                            <td>${expense.amount.toFixed(2)}</td>
+                                            <td>
+                                                <button onClick={() => this.deleteRecord(expense._id, 'expense')}>
+                                                    Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+
+                            <h2>Incomes</h2>
+                            <table className='TransactionsTable'>
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Amount</th>
+                                        <th>Delete</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {incomes.map(income => (
+                                        <tr key={income._id}>
+                                            <td>{income.title}</td>
+                                            <td>${income.amount.toFixed(2)}</td>
+                                            <td>
+                                                <button onClick={() => this.deleteRecord(income._id, 'income')}>
+                                                    Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
                     </>
                 )}
             </div>
