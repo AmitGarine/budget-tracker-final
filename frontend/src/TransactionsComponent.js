@@ -11,18 +11,22 @@ class TransactionsComponent extends React.Component {
 
                 </div>
 
-                <div>
-                    <p>Total Expenses</p>
-                    <p>X</p>
+                <div className="TransactionsTotalsContainer">
+                    <div className="Box">
+                        <h3>Total Expenses</h3>
+                        <div>$1000</div> {/* Replace this with your dynamic data */}
+                    </div>
+                    <div className="Box">
+                        <h3>Total Income</h3>
+                        <div>$2000</div> {/* Replace this with your dynamic data */}
+                    </div>
+                    <div className="Box">
+                        <h3>Balance</h3>
+                        <div>$1000</div> {/* Replace this with your dynamic data */}
+                    </div>
                 </div>
-                <div>
-                    <p>Total Income</p>
-                    <p>X</p>
-                </div>
-                <div>
-                    <p>Balance</p>
-                    <p>X</p>
-                </div>
+
+
 
                 <div>
                     Select Currency

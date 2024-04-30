@@ -49,3 +49,9 @@
   width: 100%;
   height: 40vh;
 }
+
+.TransactionsTotalsContainer {
+  display: flex;
+  justify-content: space-between;
+
+}
