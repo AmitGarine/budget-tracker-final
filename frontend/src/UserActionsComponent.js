@@ -1,11 +1,10 @@
 import React from 'react';
 import axios from 'axios';
-import { AuthContext } from './AuthContext'; 
-import RefreshContext from './RefreshContext';
+import { AppContext } from './AppContext';
 
 
 class UserActionsComponent extends React.Component {
-    static contextType = AuthContext; 
+    static contextType = AppContext;
 
     constructor(props) {
         super(props);
@@ -49,13 +48,13 @@ class UserActionsComponent extends React.Component {
                     isLoggedIn: true,
                     message: 'Login successful! Welcome ' + username
                 });
-                this.triggerGlobalRefresh(); // Trigger a refresh after login
+                this.context.triggerRefresh(); // Trigger a global refresh after login
             })
             .catch(error => {
                 this.setState({ message: 'Error logging in: ' + error.message });
                 console.error('Error logging in:', error);
             });
-    }
+    };
     
     handleLogout = () => {
         this.context.logout(); // Reset user context
@@ -65,15 +64,8 @@ class UserActionsComponent extends React.Component {
             password: '',
             message: 'Logged out successfully.'
         });
-        this.triggerGlobalRefresh(); // Trigger a refresh after logout
-    }
-    
-    triggerGlobalRefresh = () => {
-        // Access the triggerRefresh function from RefreshContext
-        if (this.props.refreshContext) {
-            this.props.refreshContext.triggerRefresh();
-        }
-    }
+        this.context.triggerRefresh(); // Trigger a global refresh after logout
+    };
 
     render() {
         const { username, password, message } = this.state;

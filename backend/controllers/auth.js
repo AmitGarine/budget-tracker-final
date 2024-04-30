@@ -1,9 +1,9 @@
 const User = require("../models/Users");
 
 exports.registerUser = async (req, res) => {
-    const { username, email, password } = req.body;
+    const { username, password } = req.body;
     try {
-        const newUser = new User({ username, email, password }); // Assuming password hashing etc. is handled
+        const newUser = new User({ username, password }); // Assuming password hashing etc. is handled
         await newUser.save();
         res.status(201).json({
             message: "User registered successfully",

@@ -1,10 +1,10 @@
 import React from 'react';
 import axios from 'axios';
-import { AuthContext } from './AuthContext'; 
+import { AppContext } from './AppContext';
 
 
 class IncomeComponent extends React.Component {
-    static contextType = AuthContext;
+    static contextType = AppContext;
 
     constructor(props) {
         super(props);
@@ -62,7 +62,8 @@ class IncomeComponent extends React.Component {
         axios.post(`http://localhost:3002/api/v1/add-income?userId=${userId}`, payload)
             .then(response => {
                 console.log('Income added:', response);
-                this.fetchIncomes(); // Refresh the incomes list
+                this.fetchIncomes();
+                this.context.triggerRefresh(); 
             })
             .catch(error => {
                 console.error('Error adding income:', error);

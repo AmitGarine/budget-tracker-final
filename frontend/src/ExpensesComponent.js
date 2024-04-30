@@ -1,10 +1,10 @@
 import React from 'react';
 import axios from 'axios';
-import { AuthContext } from './AuthContext'; 
+import { AppContext } from './AppContext';
 
 
 class ExpensesComponent extends React.Component {
-    static contextType = AuthContext;
+    static contextType = AppContext;
 
     constructor(props) {
         super(props);
@@ -63,6 +63,7 @@ class ExpensesComponent extends React.Component {
             .then(response => {
                 console.log('Expense added:', response);
                 this.fetchExpenses();
+                this.context.triggerRefresh(); 
             })
             .catch(error => {
                 console.error('Error adding expense:', error);

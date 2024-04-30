@@ -2,12 +2,10 @@ import React, { Component } from 'react';
 import Chart from 'chart.js/auto';
 import axios from 'axios';
 import './App.css';
-import RefreshContext from './RefreshContext';
-import { AuthContext } from './AuthContext'; 
+import { AppContext } from './AppContext';
 
 class TransactionsComponent extends Component {
-    static contextType = RefreshContext;
-    static contextType = AuthContext;
+    static contextType = AppContext;
 
 
     constructor(props) {

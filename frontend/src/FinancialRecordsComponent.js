@@ -1,12 +1,10 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import RefreshContext from './RefreshContext';  // Ensure this path is correct
 import './App.css'
-import { AuthContext } from './AuthContext'; 
+import { AppContext } from './AppContext';
 
 class FinancialRecordsComponent extends Component {
-    static contextType = RefreshContext;
-    static contextType = AuthContext;
+    static contextType = AppContext;
 
     state = {
         expenses: [],
@@ -54,7 +52,6 @@ class FinancialRecordsComponent extends Component {
         const endpoint = type === 'expense' ? 'delete-expense' : 'delete-income';
         axios.delete(`http://localhost:3002/api/v1/${endpoint}/${id}?userId=${userId}`)
             .then(() => {
-                alert(`${type} deleted successfully`);
                 this.fetchFinancialRecords();  // Refresh the local component state
                 this.context.triggerRefresh(); // Trigger refresh in TransactionsComponent via context
             })
