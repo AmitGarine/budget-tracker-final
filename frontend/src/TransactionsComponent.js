@@ -3,10 +3,10 @@ import Chart from 'chart.js/auto';
 import axios from 'axios';
 import './App.css';
 import { AppContext } from './AppContext';
+import 'chartjs-adapter-date-fns';  // Ensure proper imports for date handling
 
 class TransactionsComponent extends Component {
     static contextType = AppContext;
-
 
     constructor(props) {
         super(props);
@@ -31,7 +31,7 @@ class TransactionsComponent extends Component {
     }
 
     fetchExchangeRates = () => {
-        const apiKey = '0fdb5b17c585d86a0060d1f1'; // Use your API key
+        const apiKey = '0fdb5b17c585d86a0060d1f1';
         axios.get(`https://v6.exchangerate-api.com/v6/${apiKey}/latest/USD`)
             .then(response => {
                 const rates = response.data.conversion_rates;
@@ -54,45 +54,6 @@ class TransactionsComponent extends Component {
 
     updateTransactionAmounts = () => {
         const { originalExpenses, originalIncome, exchangeRates, currency } = this.state;
-        const rate = exchangeRates[currency] || 1; // Default to 1 if no rate is found to avoid errors
-    
-        this.setState({
-            totalExpenses: originalExpenses * rate,
-            totalIncome: originalIncome * rate,
-            balance: (originalIncome - originalExpenses) * rate
-        }, this.updateChartCurrency); // Update the chart with new data after state update
-    };
-    
-
-    fetchTransactionData = () => {
-        const { userId } = this.context.auth;
-        if (!userId) {
-            console.error('No user ID provided');
-            return;
-        }
-
-        Promise.all([
-            axios.get(`http://localhost:3002/api/v1/get-incomes?userId=${userId}`),
-            axios.get(`http://localhost:3002/api/v1/get-expenses?userId=${userId}`)
-        ]).then(([incomesResponse, expensesResponse]) => {
-            const incomes = incomesResponse.data;
-            const expenses = expensesResponse.data;
-            const totalIncomeUSD = incomes.reduce((acc, curr) => acc + curr.amount, 0);
-            const totalExpensesUSD = expenses.reduce((acc, curr) => acc + curr.amount, 0);
-            this.setState({
-                incomes,
-                expenses,
-                originalExpenses: totalExpensesUSD,
-                originalIncome: totalIncomeUSD
-            }, () => {
-                this.calculateTotals();
-                this.buildChart();
-            });
-        }).catch(error => console.error('Error fetching transactions:', error));
-    };
-
-    calculateTotals = () => {
-        const { originalExpenses, originalIncome, exchangeRates, currency } = this.state;
         const rate = exchangeRates[currency] || 1;
         this.setState({
             totalExpenses: originalExpenses * rate,
@@ -101,20 +62,35 @@ class TransactionsComponent extends Component {
         }, this.updateChartCurrency);
     };
 
+    fetchTransactionData = () => {
+        const { userId } = this.context.auth;
+        if (!userId) {
+            console.error('No user ID provided');
+            return;
+        }
+        Promise.all([
+            axios.get(`http://localhost:3002/api/v1/get-incomes?userId=${userId}`),
+            axios.get(`http://localhost:3002/api/v1/get-expenses?userId=${userId}`)
+        ]).then(([incomesResponse, expensesResponse]) => {
+            const incomes = incomesResponse.data;
+            const expenses = expensesResponse.data;
+            this.setState({
+                incomes,
+                expenses,
+                originalExpenses: expenses.reduce((acc, curr) => acc + curr.amount, 0),
+                originalIncome: incomes.reduce((acc, curr) => acc + curr.amount, 0)
+            }, this.calculateTotals);
+        }).catch(error => console.error('Error fetching transactions:', error));
+    };
+
+    calculateTotals = () => {
+        this.updateChartCurrency(); // This triggers chart update after totals are recalculated
+    };
+
     updateChartCurrency = () => {
         const { incomes, expenses, exchangeRates, currency } = this.state;
         const rate = exchangeRates[currency] || 1;
-        const accumulatedIncomes = incomes.map(income => income.amount * rate)
-                                          .reduce((acc, curr, index) => [...acc, acc.length ? acc[acc.length - 1] + curr : curr], []);
-        const accumulatedExpenses = expenses.map(expense => expense.amount * rate)
-                                            .reduce((acc, curr, index) => [...acc, acc.length ? acc[acc.length - 1] + curr : curr], []);
-
-        if (this.chart) {
-            this.chart.data.datasets[0].data = accumulatedIncomes;
-            this.chart.data.datasets[1].data = accumulatedExpenses;
-            this.chart.options.scales.y.title.text = `Cumulative Amount (${currency})`; // Update chart axis label
-            this.chart.update();
-        }
+        this.buildChart(incomes, expenses, rate, currency);  // Pass necessary data directly
     };
 
     handleCurrencyChange = (event) => {
@@ -126,40 +102,86 @@ class TransactionsComponent extends Component {
         const { incomes, expenses, currency, exchangeRates } = this.state;
         const rate = exchangeRates[currency] || 1;
     
-        // Check if a chart instance exists and destroy it before creating a new one
         if (this.chart) {
             this.chart.destroy();
             this.chart = null;
         }
     
-        // Convert the amounts using the current exchange rate
-        const accumulatedIncomes = incomes.map(income => income.amount * rate).reduce((acc, curr, index) => [...acc, acc.length ? acc[acc.length - 1] + curr : curr], []);
-        const accumulatedExpenses = expenses.map(expense => expense.amount * rate).reduce((acc, curr, index) => [...acc, acc.length ? acc[acc.length - 1] + curr : curr], []);
-    
-        // Get the canvas context
         const ctx = this.chartRef.current.getContext('2d');
     
-        // Create a new chart instance on the canvas
+        // Sort and map incomes and expenses to ensure all data points are valid
+        const sortedIncomes = incomes
+            .filter(inc => inc.date && !isNaN(new Date(inc.date).getTime()))
+            .sort((a, b) => new Date(a.date) - new Date(b.date))  // Sort by date
+            .map(income => ({
+                x: new Date(income.date),
+                y: income.amount * rate
+            }));
+    
+        // Calculate cumulative totals for a smoother line graph
+        const cumulativeIncomes = sortedIncomes.reduce((acc, curr) => {
+            const lastAmount = acc.length > 0 ? acc[acc.length - 1].y : 0;
+            curr.y += lastAmount;
+            acc.push(curr);
+            return acc;
+        }, []);
+    
+        const sortedExpenses = expenses
+            .filter(exp => exp.date && !isNaN(new Date(exp.date).getTime()))
+            .sort((a, b) => new Date(a.date) - new Date(b.date))  // Sort by date
+            .map(expense => ({
+                x: new Date(expense.date),
+                y: expense.amount * rate
+            }));
+    
+        const cumulativeExpenses = sortedExpenses.reduce((acc, curr) => {
+            const lastAmount = acc.length > 0 ? acc[acc.length - 1].y : 0;
+            curr.y += lastAmount;
+            acc.push(curr);
+            return acc;
+        }, []);
+    
         this.chart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
                 datasets: [
                     {
                         label: 'Income',
-                        data: accumulatedIncomes,
+                        data: cumulativeIncomes,
                         borderColor: 'rgba(75, 192, 192, 1)',
                         backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        fill: false
                     },
                     {
                         label: 'Expenses',
-                        data: accumulatedExpenses,
+                        data: cumulativeExpenses,
                         borderColor: 'rgba(255, 99, 132, 1)',
                         backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        fill: false
                     }
                 ]
             },
             options: {
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'day',
+                            tooltipFormat: 'MM/dd/yyyy' // Corrected date format
+                        },
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: `Cumulative Amount (${currency})`
+                        }
+                    }
+                },
                 responsive: true,
                 plugins: {
                     tooltip: {
@@ -167,23 +189,9 @@ class TransactionsComponent extends Component {
                         intersect: false,
                     },
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Cumulative Amount (' + currency + ')'
-                        }
-                    },
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Day of the Week'
-                        }
-                    }
-                }
             }
         });
+        
     };
     
 
