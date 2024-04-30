@@ -60,7 +60,7 @@ class TransactionsComponent extends React.Component {
     updateChartCurrency = () => {
         if (this.chart) {
             this.chart.data.datasets.forEach((dataset) => {
-                dataset.data = dataset.data.map(value => 
+                dataset.data = dataset.data.map(value =>
                     (value / this.state.exchangeRates[this.state.currency]) * this.state.exchangeRates[this.state.currency]);
             });
             this.chart.update();
@@ -72,6 +72,26 @@ class TransactionsComponent extends React.Component {
         if (this.chart) {
             this.chart.destroy();
         }
+
+        // Accumulate the values for incomes and expenses
+        const accumulatedIncomes = incomes.map(income => income.amount).reduce((acc, curr, index) => {
+            if (index === 0) {
+                acc.push(curr);
+            } else {
+                acc.push(acc[index - 1] + curr);
+            }
+            return acc;
+        }, []);
+
+        const accumulatedExpenses = expenses.map(expense => expense.amount).reduce((acc, curr, index) => {
+            if (index === 0) {
+                acc.push(curr);
+            } else {
+                acc.push(acc[index - 1] + curr);
+            }
+            return acc;
+        }, []);
+
         this.chart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -79,13 +99,13 @@ class TransactionsComponent extends React.Component {
                 datasets: [
                     {
                         label: 'Income',
-                        data: incomes.map(income => income.amount),
+                        data: accumulatedIncomes,
                         borderColor: 'rgba(75, 192, 192, 1)',
                         backgroundColor: 'rgba(75, 192, 192, 0.2)',
                     },
                     {
                         label: 'Expenses',
-                        data: expenses.map(expense => expense.amount),
+                        data: accumulatedExpenses,
                         borderColor: 'rgba(255, 99, 132, 1)',
                         backgroundColor: 'rgba(255, 99, 132, 0.2)',
                     }
@@ -104,7 +124,7 @@ class TransactionsComponent extends React.Component {
                         beginAtZero: true,
                         title: {
                             display: true,
-                            text: 'Amount (' + this.state.currency + ')'
+                            text: 'Cumulative Amount (' + this.state.currency + ')'
                         }
                     },
                     x: {
@@ -117,6 +137,7 @@ class TransactionsComponent extends React.Component {
             }
         });
     }
+
 
     render() {
         const { totalExpenses, totalIncome, balance, currency } = this.state;
