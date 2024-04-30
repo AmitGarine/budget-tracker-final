@@ -1,7 +1,7 @@
 import './App.css';
 import React, { useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { AppProvider, AppContext } from './AppContext'; 
+import { AppProvider, AppContext } from './AppContext';
 
 import UserActionsComponent from './UserActionsComponent';
 import TransactionsComponent from './TransactionsComponent';
@@ -15,8 +15,8 @@ function App() {
       <AppProvider>
         <div className="App">
           <header className="AppHeader">
-            <h1>Weekly Budget Tracker</h1>
-            <Navigation /> 
+            <h1>Budget Tracker</h1>
+            <Navigation />
           </header>
           <Routes>
             <Route path="/" element={<HomePage />} />
@@ -32,15 +32,25 @@ function HomePage() {
   const { auth, refreshKey } = useContext(AppContext);
 
   return (
-    <div key={refreshKey}>  {}
+    <div key={refreshKey}>  { }
       {!auth.isLoggedIn ? (
         <UserActionsComponent />
       ) : (
         <div className="BudgetTrackerContainer">
           <div className='HorizontalStack'>
-            <TransactionsComponent />
-            <ExpensesComponent />
-            <IncomeComponent />
+            <div className='TransactionsComponent'>
+              <TransactionsComponent />
+
+            </div>
+          </div>
+
+          <div className='VerticalStack'>
+            <div className='ExpensesComponent'>
+              <ExpensesComponent />
+            </div>
+            <div className='IncomeComponent'>
+              <IncomeComponent />
+            </div>
           </div>
         </div>
       )}
@@ -49,10 +59,10 @@ function HomePage() {
 }
 
 function Navigation() {
-  const { auth } = useContext(AppContext);  
+  const { auth } = useContext(AppContext);
 
   return (
-    auth.isLoggedIn && (  
+    auth.isLoggedIn && (
       <nav>
         <Link to="/">Home</Link> | <Link to="/records">Financial Records</Link>
       </nav>

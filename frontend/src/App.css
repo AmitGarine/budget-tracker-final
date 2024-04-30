@@ -12,7 +12,7 @@
 .BudgetTrackerContainer {
   display: flex;
   justify-content: space-between;
-  margin-top: 20px;
+  /* margin-top: 20px; */
 }
 
 .HorizontalStack {
@@ -36,12 +36,9 @@
   border-radius: 5px;
 }
 
-.UserActionsComponent {
-  width: 15%;
-}
 
 .TransactionsComponent {
-  width: 55%;
+  width: 80%;
 }
 
 .ExpensesComponent,
@@ -165,4 +162,54 @@
   color: red !important;
   font-size: 14px;
   text-align: center;
+}
+
+input[type="text"],
+input[type="number"] {
+  padding: 8px;
+  margin: 4px auto;
+  width: 300px;
+  display: block;
+}
+
+.submitButton {
+  padding: 10px 20px;
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.submitButton:hover {
+  background-color: #0056b3;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+.ExpensesContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  
+}
+
+.IncomeContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.SelectBoxContainer {
+  padding: 10px;
+}
+
+.select-box {
+  padding: 10px;
+  width: 200px;
+  
 }

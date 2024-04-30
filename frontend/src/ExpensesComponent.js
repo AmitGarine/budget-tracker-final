@@ -63,7 +63,7 @@ class ExpensesComponent extends React.Component {
             .then(response => {
                 console.log('Expense added:', response);
                 this.fetchExpenses();
-                this.context.triggerRefresh(); 
+                this.context.triggerRefresh();
             })
             .catch(error => {
                 console.error('Error adding expense:', error);
@@ -81,7 +81,7 @@ class ExpensesComponent extends React.Component {
 
     render() {
         return (
-            <div>
+            <div className="expenses-container">
                 <h3>Expenses</h3>
                 <div>
                     <input
@@ -119,13 +119,13 @@ class ExpensesComponent extends React.Component {
                         onChange={this.handleChange}
                     />
                 </div>
-                
                 <div>
-                    <button onClick={this.submitExpense}>Submit</button>
+                    <button className="submitButton" onClick={this.submitExpense}>Submit</button>
                 </div>
             </div>
         );
     }
+
 }
 
 export default ExpensesComponent;
